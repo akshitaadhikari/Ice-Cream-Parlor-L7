@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart - Ice Cream Parlor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            color: #333;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+        }
+        header {
+            background: #333;
+            color: #fff;
+            padding-top: 30px;
+            min-height: 70px;
+            border-bottom: #77d5d4 3px solid;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header a {
+            color: #fff;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 16px;
+        }
+        header ul {
+            padding: 0;
+            list-style: none;
+        }
+        header li {
+            display: inline;
+            padding: 0 20px 0 20px;
+        }
+        header .toggle-container {
+            display: flex;
+            align-items: center;
+        }
+        header .toggle-button {
+            margin-left: 20px;
+            cursor: pointer;
+        }
+        .card {
+            background: #f4f4f4;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .form-control {
+            margin-bottom: 10px;
+            padding: 10px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div id="branding">
+                <h1><span class="highlight">Ice Cream</span> Parlor</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html#flavors">Flavors</a></li>
+                    <li><a href="index.html#inventory">Inventory</a></li>
+                    <li><a href="index.html#allergies">Allergies</a></li>
+                    <li><a href="index.html#suggestions">Suggestions</a></li>
+                </ul>
+            </nav>
+            <div class="toggle-container">
+                <a href="cart.html">Cart</a>
+                <button class="toggle-button" onclick="toggleMode()">Toggle Mode</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>Your Cart</h2>
+            <div id="cart-list"></div>
+            <input type="text" id="new-cart-product" class="form-control" placeholder="Product">
+            <input type="number" id="new-cart-quantity" class="form-control" placeholder="Quantity">
+            <button onclick="addToCart()">Add to Cart</button>
+            <button onclick="removeFromCart()">Remove from Cart</button>
+        </div>
+    </div>
+
+    <script>
+        const apiUrl = 'http://127.0.0.1:5001';
+        let darkMode = false;
+
+        function toggleMode() {
+            darkMode = !darkMode;
+            if (darkMode) {
+                document.body.style.backgroundColor = '#333';
+                document.body.style.color = '#fff';
+            } else {
+                document.body.style.backgroundColor = '#fff';
+                document.body.style.color = '#333';
+            }
+        }
+
+        function fetchCart() {
+            fetch(`${apiUrl}/cart`)
+                .then(response => response.json())
+                .then(data => {
+                    const cartList = document.getElementById('cart-list');
+                    cartList.innerHTML = '';
+                    if (data.length === 0) {
+                        cartList.innerHTML = '<p>Your cart is empty.</p>';
+                    } else {
+                        data.forEach(item => {
+                            cartList.innerHTML += `<p>${item[1]} - ${item[2]}</p>`;
+                        });
+                    }
+                });
+        }
+
+        function addToCart() {
+            const product = document.getElementById('new-cart-product').value;
+            const quantity = document.getElementById('new-cart-quantity').value;
+
+            fetch(`${apiUrl}/cart`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ product, quantity })
+            }).then(() => fetchCart());
+        }
+
+        function removeFromCart() {
+            const product = document.getElementById('new-cart-product').value;
+
+            fetch(`${apiUrl}/cart`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ product })
+            }).then(() => fetchCart());
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchCart();
+        });
+    </script>
+</body>
+</html>
